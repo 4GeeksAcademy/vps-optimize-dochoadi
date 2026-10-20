@@ -1,4 +1,4 @@
-# VPS Optimize — DocoHoadi
+# VPS Optimize — DOCHOADI
 
 Optimización de recursos de un VPS de bajo perfil para maximizar rendimiento
 y liberar memoria base (baseline) antes de desplegar cargas de trabajo pesadas
