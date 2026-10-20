@@ -1,1 +1,146 @@
+============================================================
+  SNAPSHOT FINAL DEL VPS — DESPUÉS DE OPTIMIZACIÓN
+  Fecha: 2026-10-20
+============================================================
 
+[1] ¿SIGUE FUNCIONANDO EL SSH CORRECTAMENTE?
+------------------------------------------------------------
+SÍ. ✅
+- ssh.service  -> active (running)
+- Comprobado tras aplicar los cambios Y después de reiniciar
+  el VPS (sudo reboot) y reconectarse: la conexión es estable.
+- Red intacta: no se ha tocado systemd-networkd, systemd-resolved
+  ni la configuración de SSH.
+
+[2] QUÉ SE HA HECHO PARA OPTIMIZAR EL SISTEMA
+------------------------------------------------------------
+1) Reconocimiento inicial (medir antes de tocar nada):
+   - free -h  -> RAM available ANTES: 626 MiB
+   - Listado de servicios enabled y de los objetivo.
+
+2) Detenido y deshabilitado servicios innecesarios con:
+   sudo systemctl disable --now <servicio>
+   - Escritorio/hardware inútiles en un VPS:
+       cups, avahi-daemon, modemmanager, bluetooth
+     (no estaban instalados/corriendo en esta imagen -> sin efecto)
+   - Telemetría / errores:
+       apport, popularity-contest
+   - Actualizaciones automáticas:
+       unattended-upgrades  (se actualizará a mano con
+                              sudo apt update && sudo apt upgrade)
+   - Multipath de almacenamiento (no aplica en VPS de 1 disco):
+       multipathd.service y multipathd.socket
+
+3) Snap desactivado por completo (el mayor ahorro de RAM):
+   - sudo systemctl disable --now snapd.service snapd.socket
+   - Se desactivaron también todas las units dependientes:
+     snapd.seeded, snapd.apparmor, snapd.autoimport,
+     snapd.core-fixup, snapd.system-shutdown,
+     snapd.recovery-chooser-trigger, snap.lxd.activate,
+     snapd.snap-repair.timer, etc.
+   - Se MASCARÓ (mask) snapd.service y snapd.socket para que
+     ningún servicio (lxd, cloud-init) lo reactive en el boot.
+   - El snap de fábrica "lxd" dejó de tenerse en ejecución.
+   - Verificado: 0 procesos de snap/lxd en ejecución.
+
+4) Reinicio y verificación final:
+   - sudo reboot
+   - Reconexión SSH correcta.
+   - Confirmado que los servicios desactivados NO vuelven
+     a arrancar tras el boot.
+
+[3] EN QUÉ SE HA OPTIMIZADO
+------------------------------------------------------------
+RAM (memoria):
+  Antes : total 957Mi | used 172Mi | free 309Mi | available 626Mi
+  Después: total 957Mi | used 131Mi | free 608Mi | available 684Mi
+  Mejora:  -41 MiB usados  |  +58 MiB disponibles
+  (El ahorro notable (snapd ~40 MB y demás) se consolida tras el
+   reboot: "used" baja de 172 a 131 MiB; a medida que el VPS
+   acumule tiempo de arranque, el margen disponible se mantiene
+   ganando ~40-60 MiB frente al escenario con snapd activo.)
+
+Servicios en ejecución:
+  Antes : 20 servicios activos
+  Después: 15 servicios activos  (-5 servicios, enmarcado el resto)
+  Eliminados: snapd, multipathd, unattended-upgrades, apport
+              (+ snapd.socket, multipathd.socket, units snapd)
+
+Qué NO se ha tocado (por seguridad):
+  - ssh / sshd        - systemd-networkd / resolved
+  - rsyslog/journald  - cron (tareas/backups)
+  - docker/bases de datos/otros servicios instalados a propósito
+
+[4] INFO DEL SISTEMA PARA COMPARAR CON EL SNAPSHOT INICIAL
+------------------------------------------------------------
+Usuario       : root
+IP            : 165.232.68.208 (red 10.19.0.72 / 10.114.0.69)
+Sistema       : Linux bc-vps-457 5.15.0-191-generic x86_64
+OS            : Ubuntu 22.04.5 LTS (Jammy Jellyfish)
+Kernel        : #201-Ubuntu SMP Fri Aug 7 18:39:04 UTC 2026
+
+RAM           : total 957 MiB | used 131 MiB | available 684 MiB
+                (sin swap, igual que al inicio)
+
+Disco         : /dev/vda1 25G, 1.9G usados, 23G libres (8%)
+
+Servicios activos AHORA (15):
+  cron.service, dbus.service, droplet-agent.service,
+  getty@tty1.service, networkd-dispatcher.service,
+  rsyslog.service, serial-getty@ttyS0.service, ssh.service,
+  systemd-journald.service, systemd-logind.service,
+  systemd-networkd.service, systemd-resolved.service,
+  systemd-timesyncd.service, systemd-udevd.service,
+  user@0.service
+
+Comparativa con resources-before.txt:
+  - RAM: 172 -> 131 MiB usados (ahorro ~41 MiB en uso base)
+  - Available: 626 -> 684 MiB disponibles (+58 MiB)
+  - Servicios: 20 -> 15 activos
+  - Disco: sin cambios (23G libres)
+  - Swap: sigue sin configurar (0B)
+
+[5] RECOMENDACIONES A CORTO - MEDIO Y LARGO PLAZO
+------------------------------------------------------------
+CORTO PLAZO (inmediato):
+  - Actualizar el sistema a mano de forma periódica:
+      sudo apt update && sudo apt upgrade
+  - Considerar añadir swap (swapfile de 1-2G) para dar colchón
+    de memoria si se instalan apps pesadas (bases de datos,
+    contenedores, asistentes de IA):
+      sudo fallocate -l 2G /swapfile && sudo chmod 600 /swapfile
+      sudo mkswap /swapfile && sudo swapon /swapfile
+      (persistir en /etc/fstab)
+  - No es necesario reinstalar nada: Ubuntu sigue instalado,
+    solo se han evitado servicios de segundo plano.
+  - Si en el futuro se necesita algún paquete que solo exista
+    como Snap, se puede desenmascarar con:
+      sudo systemctl unmask snapd.service snapd.socket
+
+MEDIO PLAZO (próximas semanas):
+  - Instalar lo imprescindible para la carga objetivo
+    (Node, Nginx, Docker, etc.) usando apt/repos oficiales
+    en vez de Snap.
+  - Poner en marcha un firewall básico (ufw) con reglas
+    mínimas y limitar SSH (cambiar puerto o usar keys).
+  - Monitorizar RAM/disco con un cron leve o herramientas
+    tipo netdata.
+  - Evaluar si unattended-upgrades conviene reactivarlo en
+    entornos donde no se quiera gestión manual de parches:
+      sudo apt install unattended-upgrades
+      sudo systemctl enable --now unattended-upgrades
+
+LARGO PLAZO (trimestre):
+  - Migrar carga pesada a contenedores (Docker) con límites
+    de memoria (--memory) para proteger el host.
+  - Si el VPS se queda corto de RAM (1G), plantearse subir a
+    2G: con la base optimizada el escalado es mucho más barato.
+  - Automatizar el aprovisionamiento (scripts/Ansible) para
+    reproducir esta configuración en nuevos droplets.
+  - Revisar periódicamente qué servicios están activos
+    (systemctl list-units --state=running) para no acumular
+    bloat con el tiempo.
+
+------------------------------------------------------------
+  FIN DEL SNAPSHOT
+------------------------------------------------------------

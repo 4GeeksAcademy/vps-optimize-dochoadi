@@ -1,0 +1,85 @@
+============================================================
+  SNAPSHOT INICIAL DEL VPS — ANTES DE OPTIMIZACIÓN
+  Fecha: 2026-10-20
+============================================================
+
+[1] USUARIO
+------------------------------------------------------------
+root
+
+[2] IP ADDRESS
+------------------------------------------------------------
+Pública : 165.232.68.208
+Red     : 10.19.0.72   10.114.0.69
+
+[3] INFORMACIÓN DEL SISTEMA
+------------------------------------------------------------
+Kernel   : Linux bc-vps-457 5.15.0-191-generic
+Versión  : #201-Ubuntu SMP Fri Aug 7 18:39:04 UTC 2026
+Arquitectura : x86_64
+
+[4] VERSIÓN DEL OS
+------------------------------------------------------------
+Ubuntu 22.04.5 LTS (Jammy Jellyfish)
+- NAME           : Ubuntu
+- VERSION_ID     : 22.04
+- VERSION_CODENAME: jammy
+- ID_LIKE        : debian
+
+[5] RAM
+------------------------------------------------------------
+             total     used     free   shared  buff/cache  available
+Mem:         957Mi     172Mi    309Mi    4.0Mi     475Mi      625Mi
+Swap:           0B       0B      0B
+
+[6] ESPACIO EN DISCO (total y libre)
+------------------------------------------------------------
+Filesystem      Size  Used  Avail  Use%  Mounted on
+/dev/vda1        25G  1.9G    23G    8%   /
+/dev/vda15      105M  6.1M    99M    6%   /boot/efi
+tmpfs          96M   1.1M    95M    2%   /run
+tmpfs          479M    0B   479M    0%   /dev/shm
+tmpfs          5.0M    0B   5.0M    0%   /run/lock
+tmpfs          96M   4.0K   96M    1%   /run/user/0
+
+[7] SERVICIOS EN EJECUCIÓN
+------------------------------------------------------------
+cron.service                 Regular background program processing daemon
+dbus.service                 D-Bus System Message Bus
+droplet-agent.service        The DigitalOcean Droplet Agent
+getty@tty1.service           Getty on tty1
+multipathd.service           Device-Mapper Multipath Device Controller
+networkd-dispatcher.service  Dispatcher daemon for systemd-networkd
+packagekit.service           PackageKit Daemon
+polkit.service               Authorization Manager
+rsyslog.service              System Logging Service
+serial-getty@ttyS0.service   Serial Getty on ttyS0
+snapd.service                Snap Daemon
+ssh.service                  OpenBSD Secure Shell server
+systemd-journald.service     Journal Service
+systemd-logind.service       User Login Management
+systemd-networkd.service     Network Configuration
+systemd-resolved.service     Network Name Resolution
+systemd-timesyncd.service    Network Time Synchronization
+systemd-udevd.service        Rule-based Manager for Device Events and Files
+unattended-upgrades.service  Unattended Upgrades Shutdown
+user@0.service               User Manager for UID 0
+
+[8] OBSERVACIONES (para comparar al final)
+------------------------------------------------------------
+- RAM: 957 MiB totales, solo 172 MiB usadas (18%) -> margen holgado.
+  Disponible: 625 MiB. SIN swap configurado (0B).
+- Disco: /dev/vda1 = 25G totales, 1.9G usados, 23G libres (8%).
+  Nada que ocupar espacio de forma anómala.
+- 20 servicios en ejecución (instalación Ubuntu/DigitalOcean por defecto).
+- Candidatos a desactivar/revisar si no se usan (servicios opcionales):
+    * snapd.service            (Snap Daemon)
+    * packagekit.service       (PackageKit Daemon)
+    * multipathd.service       (Device-Mapper Multipath)
+    * unattended-upgrades.service (actualizaciones automáticas)
+    * droplet-agent.service    (agente de DigitalOcean)
+- Posible mejora futura: añadir swap para colchón de memoria.
+
+------------------------------------------------------------
+  FIN DEL SNAPSHOT
+------------------------------------------------------------
